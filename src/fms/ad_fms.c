@@ -1,10 +1,9 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
-#include <assert.h> 
+#include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include <malloc.h>
 #include "ad_defs.h"
 #include "ad_random.h"
 #include "ad_fileio.h"
@@ -14,7 +13,7 @@
 #include "ad_bucketio.h"
 #include "ad_lib.h"
 #include "ad_lib_fms.h"
- 
+
 /* FOR SANCHIS' VERSION OF MULTI-WAY PARTITIONING */
 /* Also mentioned as the SN algorithm */
 /* Direct multi-way partitioning.
@@ -48,7 +47,7 @@ int main(int argc, char *argv[])
     char fname[STR_SIZE];
     sprintf(fname, "%s", argv[1]);
 
-    noparts = atoi(argv[2]);                         
+    noparts = atoi(argv[2]);
 
     long seed;
     if (argc > 3) {
@@ -94,11 +93,11 @@ int main(int argc, char *argv[])
     assert(ncells != NULL);
 
     /* partition buckets */
-    partb_t partb[noparts][noparts - 1];  
-    parts_info_t parts_info[noparts]; 
+    partb_t partb[noparts][noparts - 1];
+    parts_info_t parts_info[noparts];
 
     /* population (w/ one individual!) */
-    ind_t pop[MAX_POP];             
+    ind_t pop[MAX_POP];
     for (int i = 0; i < MAX_POP; i++) {
         pop[i].chrom = (allele *) calloc(nocells, sizeof(allele));
         assert(pop[i].chrom != NULL);
@@ -107,13 +106,13 @@ int main(int argc, char *argv[])
     }
 
     /* selected cell */
-    selected_cell_t scell[1];     
+    selected_cell_t scell[1];
 
     /* moved cells */
     mcells_t *mcells = (mcells_t *) calloc(nocells, sizeof(mcells_t));
     assert(mcells != NULL);
- 
-    read_hgraph(fname, nocells, nonets, nopins, noparts, 
+
+    read_hgraph(fname, nocells, nonets, nopins, noparts,
                 &totcellsize, &totnetsize, &max_cdeg, &max_ndeg,
                 &max_cweight, &max_nweight,
                 cells, nets, cnets, ncells);
@@ -129,7 +128,7 @@ int main(int argc, char *argv[])
     }
 
     float off_ratio = (float) 0.1;
-    create_partition(nocells, noparts, totcellsize, max_cweight, &off_ratio, 
+    create_partition(nocells, noparts, totcellsize, max_cweight, &off_ratio,
                      cells, nets, cnets, &pop[0]);
 
 #ifdef DEBUG
@@ -157,7 +156,7 @@ int main(int argc, char *argv[])
 
         copy_nets_info(nonets, noparts, nets, nets_info);
 
-        compute_gains(nocells, noparts, cells, nets, cnets, 
+        compute_gains(nocells, noparts, cells, nets, cnets,
                       cells_info, pop[0].chrom);
 
         create_buckets(nocells, noparts, max_gain, pop[0].chrom,
@@ -178,8 +177,8 @@ int main(int argc, char *argv[])
             if (move_possible == True) {
                 move_cell(mcells, msize, scell);
                 msize++;
-                update_gains(noparts, max_gain, scell, 
-                             cells, nets, cnets, ncells, nets_info, 
+                update_gains(noparts, max_gain, scell,
+                             cells, nets, cnets, ncells, nets_info,
                              partb, cells_info, pop[0].chrom);
             }   /* if */
             nlocked++;
@@ -195,20 +194,20 @@ int main(int argc, char *argv[])
 #endif
 
         if (gain_sum > 0) {
-            int cut_gain = move_cells(False, nocells, msize, mcells, max_mcells_inx, 
+            int cut_gain = move_cells(False, nocells, msize, mcells, max_mcells_inx,
                                       cutsize, &glob_inx, &pop[0], cells, nets, cnets);
             cutsize -= cut_gain;
         }   /* if */
         no_iter++;
 
 #ifdef DEBUG
-        printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n", 
+        printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n",
                no_iter, cutsize, find_cut_size(nonets, noparts, totnetsize, nets, &pop[0]));
 #endif
 
     } while ((gain_sum > 0) && (cutsize > 0) && (no_iter < NO_ITERATIONS));
 
-    printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n", no_iter, 
+    printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n", no_iter,
            cutsize, find_cut_size(nonets, noparts, totnetsize, nets, &pop[0]));
 
     free_nodes(noparts, bucketsize, partb);
@@ -222,36 +221,36 @@ int main(int argc, char *argv[])
 #endif
 
     /* free memory for all data structures */
-    cfree(cells);
+    free(cells);
     for (int i = 0; i < nocells; i++) {
-        cfree(cells_info[i].mgain);
-        cfree(cells_info[i].partb_ptr);
-        cfree(cells_info[i].partb_gain_inx);
+        free(cells_info[i].mgain);
+        free(cells_info[i].partb_ptr);
+        free(cells_info[i].partb_gain_inx);
     }
-    cfree(cells_info);
+    free(cells_info);
 
     for (int i = 0; i < nonets; i++) {
-        cfree(nets[i].npartdeg);
-        cfree(nets_info[i].npartdeg);
+        free(nets[i].npartdeg);
+        free(nets_info[i].npartdeg);
     }
-    cfree(nets);
-    cfree(nets_info);
+    free(nets);
+    free(nets_info);
 
-    cfree(cnets);
-    cfree(ncells);
+    free(cnets);
+    free(ncells);
 
     for (int i = 0; i < noparts; i++) {
         for (int j = 0; j < noparts - 1; ++j) {
-            cfree(partb[i][j].bnode_ptr);
+            free(partb[i][j].bnode_ptr);
         }
     }
 
     for (int i = 0; i < MAX_POP; i++) {
-        cfree(pop[i].chrom);
-        cfree(pop[i].parts);
+        free(pop[i].chrom);
+        free(pop[i].parts);
     }
 
-    cfree(mcells);
+    free(mcells);
 
     return (0);
 }   /* main-fms */

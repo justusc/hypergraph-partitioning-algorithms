@@ -1,9 +1,8 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
 #include <errno.h>
 #include "ad_random.h"
 #include "ad_fileio.h"
@@ -24,7 +23,7 @@ int create_partition(int nocells,
     /* init current size */
     for (int i = 0; i < noparts; i++) {
         ind->parts[i].pratio = 1.0 / noparts;
-        ind->parts[i].pcurr_size = 0;   
+        ind->parts[i].pcurr_size = 0;
         ind->parts[i].pmax_cells = 0;
     }   /* for i */
 
@@ -52,7 +51,7 @@ int create_partition(int nocells,
         int tcount = -1; /* tparts is used to randomize partitioning */
         for (int j = 0; j < noparts; j++) {
             if (ind->parts[j].pcurr_size == min_size) {
-                tcount++; 
+                tcount++;
                 tparts[tcount] = j;
             }   /* if */
         }   /* for j */
@@ -60,8 +59,8 @@ int create_partition(int nocells,
 
         /* assign cell i to part[min_inx] */
         ind->chrom[i] = min_inx;
-        ind->parts[min_inx].pcurr_size += cells[i].cweight; 
-        ind->parts[min_inx].pmax_cells++; 
+        ind->parts[min_inx].pcurr_size += cells[i].cweight;
+        ind->parts[min_inx].pmax_cells++;
 
         /* find net info */
         int cnets_inx = cells[i].netlist;
@@ -72,7 +71,7 @@ int create_partition(int nocells,
 
     }   /* for i */
 
-    cfree(tparts);
+    free(tparts);
 
     /* determine min & max part sizes */
     /* also adjust the min & max part sizes */
@@ -91,7 +90,7 @@ int create_partition(int nocells,
             if (ind->parts[i].pmax_size > max_size) {
                 max_size = ind->parts[i].pmax_size;
             }
-        }   /* for i */ 
+        }   /* for i */
 
         int i = 0;
         while ((i < noparts) && (part_fit)) {
@@ -138,7 +137,7 @@ int read_partition(FILE *fp,
                    corn_t cnets[],
                    ind_t *ind)
 {
-    int max_size = -1; 
+    int max_size = -1;
     open_file(&fp, filename, "r");
 
     for (int i = 0; i < noparts; i++) {
@@ -153,7 +152,7 @@ int read_partition(FILE *fp,
                    &(ind->parts[part_no].pmin_size),
                    &(ind->parts[part_no].pcurr_size),
                    &(ind->parts[part_no].pmax_size)) == EOF) {
-            printf("Error: Cannot read from %s: errno= %d error= %s\n", filename, errno, strerror(errno));        
+            printf("Error: Cannot read from %s: errno= %d error= %s\n", filename, errno, strerror(errno));
         }
 
         if (ind->parts[part_no].pmax_size > max_size)
@@ -165,7 +164,7 @@ int read_partition(FILE *fp,
             if (fscanf(fp, "%d", &cell_no) == EOF) {
                 printf("Error: Cannot read from %s: errno= %d error= %s\n", filename, errno, strerror(errno));
             }
-            ind->chrom[cell_no] = part_no; 
+            ind->chrom[cell_no] = part_no;
 
             /* find net info */
             int cnets_inx = cells[cell_no].netlist;

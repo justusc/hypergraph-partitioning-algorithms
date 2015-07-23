@@ -1,4 +1,4 @@
-CC0 = gcc
+CC0 = clang
 CC = $(CC0)
 LD = $(CC0)
 FLAGS1 = -O3

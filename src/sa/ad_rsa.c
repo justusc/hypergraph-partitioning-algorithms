@@ -1,11 +1,10 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <malloc.h>
 #include "ad_defs.h"
 #include "ad_random.h"
 #include "ad_fileio.h"
@@ -46,7 +45,7 @@ int main(int argc, char *argv[])
     float cutoff;          /* a speedup option - see the paper */
     int delta;             /* cost difference between the last two states */
     int freezelimit;       /* when freezecount reaches this limit, the system is frozen */
-    int freezecount;      
+    int freezecount;
     int nochanges;         /* number of accepted states */
     int changeslimit;      /* limit on max number of accepted changes */
     int notrials;          /* number of tried states */
@@ -56,7 +55,7 @@ int main(int argc, char *argv[])
     int selected;          /* set if a feasible move is found */
     int changed;           /* set if a change occurs in best_cutsize */
     int same;              /* count the number of times cutsize remains the same */
-    int samecount;         /* limit on the counter "same" */ 
+    int samecount;         /* limit on the counter "same" */
     int prev_cutsize;      /* previous cutsize value - used with "same" */
     int pass_no;           /* pass number */
 
@@ -153,7 +152,7 @@ int main(int argc, char *argv[])
         assert(best_pop[i].parts != NULL);
     }
 
-    read_hgraph(fname, nocells, nonets, nopins, noparts, 
+    read_hgraph(fname, nocells, nonets, nopins, noparts,
                 &totcellsize, &totnetsize, &max_cdeg, &max_ndeg,
                 &max_cweight, &max_nweight,
                 cells, nets, cnets, ncells);
@@ -176,7 +175,7 @@ int main(int argc, char *argv[])
 
     /* find initial cutsize */
     cutsize = find_cut_size(nonets, noparts, totnetsize, nets, &pop[0]);
-    
+
     /* find initial ratiosize */
     ratiosize = (float) cutsize;
     for (int i = 0; i < noparts; i++) {
@@ -223,7 +222,7 @@ int main(int argc, char *argv[])
             notrials++;
 
             /* randomly select a cell to move to a randomly selected part */
-            selected = select_cell(nocells, noparts, scell, pop[0].chrom, 
+            selected = select_cell(nocells, noparts, scell, pop[0].chrom,
                                    cells, pop[0].parts, cells_info);
             if (! selected) {
                 printf("Error: Cannot find a move to select.\n");
@@ -248,7 +247,7 @@ int main(int argc, char *argv[])
                accept with an ever decreasing probability that depends
                on delta and the current temperature */
             if (((float) rdelta <= 0.0) ||
-                (((float) rdelta > 0.0) && 
+                (((float) rdelta > 0.0) &&
                  (rand01() <= (float) exp((double) -rdelta / (double) temperature)))) {
 
 #ifdef DEBUG2
@@ -263,7 +262,7 @@ int main(int argc, char *argv[])
                 move_cell(scell, pop[0].chrom, cells, pop[0].parts);
 
                 /* update the costs of the neighbor cells */
-                update_gains(scell, cells, nets, cnets, ncells, 
+                update_gains(scell, cells, nets, cnets, ncells,
                              cells_info, pop[0].chrom);
                 cutsize += delta;
                 ratiosize += rdelta;
@@ -281,14 +280,14 @@ int main(int argc, char *argv[])
         }   /* while */
 
 #ifdef DEBUG1
-        printf("changes=%d trials=%d accept=%f temperature=%f\n", 
-               nochanges, notrials, 
+        printf("changes=%d trials=%d accept=%f temperature=%f\n",
+               nochanges, notrials,
                (100.0 * (float) nochanges / notrials), temperature);
 #endif
 
         /* reduce the temperature and update the other variables of SA
            algorithm */
-        temperature = tempfactor * temperature; 
+        temperature = tempfactor * temperature;
         if (changed) {
             freezecount = 0;
         }
@@ -303,32 +302,32 @@ int main(int argc, char *argv[])
         if (diff <= 0.0001 * prev_ratiosize) {
             /* if the change is less than 1 in 10000, it is practially
                the same */
-            same++;  
+            same++;
         } else {
             same = 0;
             prev_ratiosize = ratiosize;
         }
         /* if has seen the same solution enough number of times, it is
            time to quit */
-        if (same >= samecount) { 
+        if (same >= samecount) {
             freezecount = freezelimit;  /* exit */
         }
 
 #ifdef DEBUG1
         printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n",
-               pass_no, best_cutsize, 
-               find_cut_size(nonets, noparts, totnetsize, 
+               pass_no, best_cutsize,
+               find_cut_size(nonets, noparts, totnetsize,
                              best_nets, &best_pop[0]));
 #endif
 
-    }   /* while */ 
+    }   /* while */
 
 #ifdef DEBUG1
     printf("Why : same=%d accept rate=%f\n", same, (float) nochanges / notrials);
 #endif
 
     printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n",
-           pass_no, best_cutsize, 
+           pass_no, best_cutsize,
            find_cut_size(nonets, noparts, totnetsize, best_nets, &best_pop[0]));
 
 #ifdef DEBUG1
@@ -340,29 +339,29 @@ int main(int argc, char *argv[])
 #endif
 
     /* free memory for all data structures */
-    cfree(cells);
+    free(cells);
     for (int i = 0; i < nocells; i++) {
-        cfree(cells_info[i].mgain);
+        free(cells_info[i].mgain);
     }
-    cfree(cells_info);
+    free(cells_info);
 
     for (int i = 0; i < nonets; i++) {
-        cfree(nets[i].npartdeg);
-        cfree(nets_info[i].npartdeg);
-        cfree(best_nets[i].npartdeg);
+        free(nets[i].npartdeg);
+        free(nets_info[i].npartdeg);
+        free(best_nets[i].npartdeg);
     }
-    cfree(nets);
-    cfree(nets_info);
-    cfree(best_nets);
+    free(nets);
+    free(nets_info);
+    free(best_nets);
 
-    cfree(cnets);
-    cfree(ncells);
+    free(cnets);
+    free(ncells);
 
     for (int i = 0; i < MAX_POP; i++) {
-        cfree(pop[i].chrom);
-        cfree(pop[i].parts);
-        cfree(best_pop[i].chrom);
-        cfree(best_pop[i].parts);
+        free(pop[i].chrom);
+        free(pop[i].parts);
+        free(best_pop[i].chrom);
+        free(best_pop[i].parts);
     }
 
     return (0);

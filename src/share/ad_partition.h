@@ -1,11 +1,10 @@
 #ifndef AD_PARTITION_INCLUDED
 #define AD_PARTITION_INCLUDED
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
 #include <stdlib.h>
 #include <string.h>
-#include <malloc.h>
 #include <errno.h>
 #include "ad_random.h"
 #include "ad_fileio.h"

@@ -1,11 +1,10 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include <malloc.h>
 #include "ad_defs.h"
 #include "ad_random.h"
 #include "ad_fileio.h"
@@ -39,14 +38,14 @@ int main(int argc, char *argv[])
     float costsum;         /* sum of cutsizes during a temperature length */
     float cost2sum;        /* sum of squares of cutsizes during a temperature length */
     float percentchanges;  /* percentage of accepted moves (= changes) */
-    float costvariance;    /* variance of cutsizes (= cost) */ 
+    float costvariance;    /* variance of cutsizes (= cost) */
     float temperature;     /* temperature in SA alg. */
     float tempfactor;      /* cooling ratio */
     int templength;        /* number of runs until equilibrium at a certain temperature */
     int nochanges;         /* number of accepted states */
     int notrials;          /* number of tried states */
     int selected;          /* set if a feasible move is found */
-    int changed;           /* set if a state is accepted */ 
+    int changed;           /* set if a state is accepted */
     int delta;             /* cost difference between the last two states */
     int nouphills;         /* number of uphill moves */
     int frozen;            /* set if the system is frozen - after all three regions */
@@ -63,7 +62,7 @@ int main(int argc, char *argv[])
     char fname[STR_SIZE];
     sprintf(fname, "%s", argv[1]);
 
-    noparts = atoi(argv[2]);                         
+    noparts = atoi(argv[2]);
 
     long seed;
     if (argc > 3) {
@@ -136,7 +135,7 @@ int main(int argc, char *argv[])
         assert(best_pop[i].parts != NULL);
     }
 
-    read_hgraph(fname, nocells, nonets, nopins, noparts, 
+    read_hgraph(fname, nocells, nonets, nopins, noparts,
                 &totcellsize, &totnetsize, &max_cdeg, &max_ndeg,
                 &max_cweight, &max_nweight,
                 cells, nets, cnets, ncells);
@@ -175,10 +174,10 @@ int main(int argc, char *argv[])
 
     /* initialize variables of SA algorithm */
     temperature = 10.0;
-    templength = nocells * (noparts - 1); 
+    templength = nocells * (noparts - 1);
 
     /* the whole run has three different regions: region1 is the initialization. */
-    region2 = True;    
+    region2 = True;
     region3 = region4 = False;
     pass_no = 0;
 
@@ -189,14 +188,14 @@ int main(int argc, char *argv[])
         costsum = 0.0;
         cost2sum = 0.0;
         nouphills = 0;
-        nochanges = 0;    
+        nochanges = 0;
         changed = False;
 
         /* perform the following exploration templength times */
         for (notrials = 0; notrials < templength; notrials++) {
 
             /* randomly select a cell to move to a randomly selected part */
-            selected = select_cell(nocells, noparts, scell, pop[0].chrom, 
+            selected = select_cell(nocells, noparts, scell, pop[0].chrom,
                                    cells, pop[0].parts, cells_info);
             if (! selected) {
                 printf("Error: Cannot find a move to select.\n");
@@ -212,7 +211,7 @@ int main(int argc, char *argv[])
                accept with an ever decreasing probability that depends
                on delta and the current temperature */
             if (((float) delta <= 0.0) ||
-                (((float) delta > 0.0) && 
+                (((float) delta > 0.0) &&
                  (rand01() <= (float) exp((double) -delta / (double) temperature)))) {
 
 #ifdef DEBUG2
@@ -225,7 +224,7 @@ int main(int argc, char *argv[])
                 move_cell(scell, pop[0].chrom, cells, pop[0].parts);
 
                 /* update the costs of the neighbor cells */
-                update_gains(scell, cells, nets, cnets, ncells, 
+                update_gains(scell, cells, nets, cnets, ncells,
                              cells_info, pop[0].chrom);
                 cutsize += delta;
 
@@ -249,8 +248,8 @@ int main(int argc, char *argv[])
         }   /* for */
 
 #ifdef DEBUG1
-        printf("changes=%d trials=%d \% accept=%f temperature=%f\n", 
-               nochanges, notrials, 
+        printf("changes=%d trials=%d \% accept=%f temperature=%f\n",
+               nochanges, notrials,
                (100.0 * (float) nochanges / notrials), temperature);
 #endif
 
@@ -259,7 +258,7 @@ int main(int argc, char *argv[])
 
 #ifdef DEBUG1
         printf("pass_no = %d Region=%d%d%d Final cutsize  = %d Check cutsize = %d\n",
-               pass_no, region2, region3, region4, cutsize, 
+               pass_no, region2, region3, region4, cutsize,
                find_cut_size(nonets, noparts, totnetsize, best_nets, &best_pop[0]));
 #endif
 
@@ -267,7 +266,7 @@ int main(int argc, char *argv[])
             tempfactor = 0.95;
 
             if (region2) {   /* when in region2 of the run: heating up */
-                costvariance = cost2sum / nochanges - 
+                costvariance = cost2sum / nochanges -
                     ((costsum * costsum) / (nochanges * nochanges));
                 costvariance = costvariance / temperature;
                 if (costvariance >= 0.05) {
@@ -277,11 +276,11 @@ int main(int argc, char *argv[])
                 }
             } else if (region3) {   /* when in region3 of the run: cooling */
                 percentchanges = (float) nochanges / templength;
-                if (percentchanges > 0.5) { 
+                if (percentchanges > 0.5) {
                     tempfactor = 0.95;
                 } else {
                     region3 = False; region4 = True;
-                } 
+                }
             } else if (region4) {   /* when in region4 of the run: slow cooling */
                 if (nouphills > 0) {
                     tempfactor = 0.95;
@@ -299,10 +298,10 @@ int main(int argc, char *argv[])
             printf("Warning: No change during this temperature length.\n");
             exit(1);
         }   /* else if not changed */
-    }   /* while not frozen */ 
+    }   /* while not frozen */
 
     printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n",
-           pass_no, best_cutsize, 
+           pass_no, best_cutsize,
            find_cut_size(nonets, noparts, totnetsize, best_nets, &best_pop[0]));
 
 #ifdef DEBUG1
@@ -314,29 +313,29 @@ int main(int argc, char *argv[])
 #endif
 
     /* free memory for all data structures */
-    cfree(cells);
+    free(cells);
     for (int i = 0; i < nocells; i++) {
-        cfree(cells_info[i].mgain);
+        free(cells_info[i].mgain);
     }
-    cfree(cells_info);
+    free(cells_info);
 
     for (int i = 0; i < nonets; i++) {
-        cfree(nets[i].npartdeg);
-        cfree(nets_info[i].npartdeg);
-        cfree(best_nets[i].npartdeg);
+        free(nets[i].npartdeg);
+        free(nets_info[i].npartdeg);
+        free(best_nets[i].npartdeg);
     }
-    cfree(nets);
-    cfree(nets_info);
-    cfree(best_nets);
+    free(nets);
+    free(nets_info);
+    free(best_nets);
 
-    cfree(cnets);
-    cfree(ncells);
+    free(cnets);
+    free(ncells);
 
     for (int i = 0; i < MAX_POP; i++) {
-        cfree(pop[i].chrom);
-        cfree(pop[i].parts);
-        cfree(best_pop[i].chrom);
-        cfree(best_pop[i].parts);
+        free(pop[i].chrom);
+        free(pop[i].parts);
+        free(best_pop[i].chrom);
+        free(best_pop[i].parts);
     }
 
     return (0);
