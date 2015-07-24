@@ -19,19 +19,14 @@
 
 int main(int argc, char *argv[])
 {
+    /* the hypergraph to partition */
+    hypergraph_t hgraph;   /* hypergraph structure */
+
     /* partitioning variables */
-    int nocells;           /* number of cells */
-    int nonets;            /* number of nets */
-    int nopins;            /* number of pins */
     int noparts;           /* number of partitions */
-    int totcellsize;       /* total cell weight of the partition */
-    int totnetsize;        /* total net weight of the partition */
     int cutsize;           /* cutsize of the partition */
     int max_gain;          /* max gain of a cell */
-    int max_cdeg;          /* max density of a cell */
-    int max_ndeg;          /* max density of a net */
-    int max_cweight;       /* max cell weight */
-    int max_nweight;       /* max net weight */
+
 
     /* SA algorithm variables */
     float temperature;     /* temperature in SA alg. */
@@ -73,42 +68,42 @@ int main(int argc, char *argv[])
     seed = randomize((long) seed);
     printf("SEED = %ld fname = %s\n", seed, fname);
 
-    read_hgraph_size(fname, &nocells, &nonets, &nopins);
+    read_hgraph_size(fname, &hgraph.nocells, &hgraph.nonets, &hgraph.nopins);
 
     /* alloc memory for all data structures */
-    cells_t *cells = (cells_t *) calloc(nocells, sizeof(cells_t));
-    assert(cells != NULL);
-    cells_info_t *cells_info = (cells_info_t *) calloc(nocells, sizeof(cells_info_t));
+    hgraph.cells = (cells_t *) calloc(hgraph.nocells, sizeof(cells_t));
+    assert(hgraph.cells != NULL);
+    cells_info_t *cells_info = (cells_info_t *) calloc(hgraph.nocells, sizeof(cells_info_t));
     assert(cells_info != NULL);
-    for (int i = 0; i < nocells; i++) {
+    for (int i = 0; i < hgraph.nocells; i++) {
         cells_info[i].mgain = (int *) calloc(noparts, sizeof(int));
         assert(cells_info[i].mgain != NULL);
         cells_info[i].partb_ptr = NULL;
         cells_info[i].partb_gain_inx = NULL;
     }
 
-    nets_t *nets = (nets_t *) calloc(nonets, sizeof(nets_t));
-    assert(nets != NULL);
-    nets_info_t *nets_info = (nets_info_t *) calloc(nonets, sizeof(nets_info_t));
+    hgraph.nets = (nets_t *) calloc(hgraph.nonets, sizeof(nets_t));
+    assert(hgraph.nets != NULL);
+    nets_info_t *nets_info = (nets_info_t *) calloc(hgraph.nonets, sizeof(nets_info_t));
     assert(nets_info != NULL);
-    for (int i = 0; i < nonets; i++) {
-        nets[i].npartdeg = (int *) calloc(noparts, sizeof(int));
-        assert(nets[i].npartdeg != NULL);
+    for (int i = 0; i < hgraph.nonets; i++) {
+        hgraph.nets[i].npartdeg = (int *) calloc(noparts, sizeof(int));
+        assert(hgraph.nets[i].npartdeg != NULL);
         nets_info[i].npartdeg = (int *) calloc(noparts, sizeof(int));
         assert(nets_info[i].npartdeg != NULL);
     }
 
     /* cells of nets */
-    corn_t *cnets = (corn_t *) calloc(nopins, sizeof(corn_t));
-    assert(cnets != NULL);
+    hgraph.cnets = (corn_t *) calloc(hgraph.nopins, sizeof(corn_t));
+    assert(hgraph.cnets != NULL);
     /* nets of cells */
-    corn_t *ncells = (corn_t *) calloc(nopins, sizeof(corn_t));
-    assert(ncells != NULL);
+    hgraph.ncells = (corn_t *) calloc(hgraph.nopins, sizeof(corn_t));
+    assert(hgraph.ncells != NULL);
 
     /* population (w/ one individual!) */
     ind_t pop[MAX_POP];
     for (int i = 0; i < MAX_POP; i++) {
-        pop[i].chrom = (allele *) calloc(nocells, sizeof(allele));
+        pop[i].chrom = (allele *) calloc(hgraph.nocells, sizeof(allele));
         assert(pop[i].chrom != NULL);
         pop[i].parts = (parts_t *) calloc(noparts, sizeof(parts_t));
         assert(pop[i].parts != NULL);
@@ -120,30 +115,30 @@ int main(int argc, char *argv[])
     /* properties of the best solution */
     int best_cutsize;
 
-    nets_t *best_nets = (nets_t *) calloc(nonets, sizeof(nets_t));
+    nets_t *best_nets = (nets_t *) calloc(hgraph.nonets, sizeof(nets_t));
     assert(best_nets != NULL);
-    for (int i = 0; i < nonets; i++) {
+    for (int i = 0; i < hgraph.nonets; i++) {
         best_nets[i].npartdeg = (int *) calloc(noparts, sizeof(int));
         assert(best_nets[i].npartdeg != NULL);
     }
 
     ind_t best_pop[MAX_POP];
     for (int i = 0; i < MAX_POP; i++) {
-        best_pop[i].chrom = (allele *) calloc(nocells, sizeof(allele));
+        best_pop[i].chrom = (allele *) calloc(hgraph.nocells, sizeof(allele));
         assert(best_pop[i].chrom != NULL);
         best_pop[i].parts = (parts_t *) calloc(noparts, sizeof(parts_t));
         assert(best_pop[i].parts != NULL);
     }
 
-    read_hgraph(fname, nocells, nonets, nopins, noparts,
-                &totcellsize, &totnetsize, &max_cdeg, &max_ndeg,
-                &max_cweight, &max_nweight,
-                cells, nets, cnets, ncells);
+    read_hgraph(fname, hgraph.nocells, hgraph.nonets, hgraph.nopins, noparts,
+                &hgraph.totcellsize, &hgraph.totnetsize, &hgraph.max_cdeg, &hgraph.max_ndeg,
+                &hgraph.max_cweight, &hgraph.max_nweight,
+                hgraph.cells, hgraph.nets, hgraph.cnets, hgraph.ncells);
 
     /* create the initial partition or solution */
     float off_ratio = (float) 0.1;   /* alpha in initial partitioning */
-    create_partition(nocells, noparts, totcellsize, max_cweight, &off_ratio,
-                     cells, nets, cnets, &pop[0]);
+    create_partition(hgraph.nocells, noparts, hgraph.totcellsize, hgraph.max_cweight, &off_ratio,
+                     hgraph.cells, hgraph.nets, hgraph.cnets, &pop[0]);
 
 #ifdef DEBUG1
     printf("off=%f\n", off_ratio);
@@ -154,25 +149,25 @@ int main(int argc, char *argv[])
     }
 #endif
 
-    max_gain = max_cdeg * max_nweight;
+    max_gain = hgraph.max_cdeg * hgraph.max_nweight;
 
     /* find initial cutsize */
-    cutsize = find_cut_size(nonets, noparts, totnetsize, nets, &pop[0]);
+    cutsize = find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize, hgraph.nets, &pop[0]);
 #ifdef DEBUG1
-    printf("Totalsize = %d Initial cutsize = %d\n", totnetsize, cutsize);
+    printf("Totalsize = %d Initial cutsize = %d\n", hgraph.totnetsize, cutsize);
 #endif
 
     /* compute costs (gains) of cells in hypergraph */
-    compute_gains(nocells, noparts, cells, nets, cnets, cells_info, pop[0].chrom);
+    compute_gains(hgraph.nocells, noparts, hgraph.cells, hgraph.nets, hgraph.cnets, cells_info, pop[0].chrom);
 
     /* initialize the current champion solution */
     best_cutsize = cutsize;
-    copy_pop(nocells, noparts, pop, best_pop);
-    copy_nets(nonets, noparts, nets, best_nets);
+    copy_pop(hgraph.nocells, noparts, pop, best_pop);
+    copy_nets(hgraph.nonets, noparts, hgraph.nets, best_nets);
 
     /* initialize variables of SA algorithm */
     changed = False;
-    neigh_size = nocells * (noparts - 1);
+    neigh_size = hgraph.nocells * (noparts - 1);
     sizefactor = 16;      /* 16 in paper */
     minpercent = 0.02;    /* 0.02 in paper */
     cutoff = 1.0;         /* 1.0 in paper */
@@ -182,7 +177,7 @@ int main(int argc, char *argv[])
     freezecount = 0;
     pass_no = 0;
     same = 0;
-    samecount = nocells / 2;
+    samecount = hgraph.nocells / 2;
     prev_cutsize = -1;
     trialslimit = sizefactor * neigh_size;
     changeslimit = (int) (cutoff * sizefactor * neigh_size);
@@ -196,8 +191,8 @@ int main(int argc, char *argv[])
             notrials++;
 
             /* randomly select a cell to move to a randomly selected part */
-            selected = select_cell(nocells, noparts, scell, pop[0].chrom,
-                                   cells, pop[0].parts, cells_info);
+            selected = select_cell(hgraph.nocells, noparts, scell, pop[0].chrom,
+                                   hgraph.cells, pop[0].parts, cells_info);
             if (! selected) {
                 printf("Error: Cannot find a move to select.\n");
                 exit(1);
@@ -224,10 +219,10 @@ int main(int argc, char *argv[])
                 nochanges++;
 
                 /* move the selected cell */
-                move_cell(scell, pop[0].chrom, cells, pop[0].parts);
+                move_cell(scell, pop[0].chrom, hgraph.cells, pop[0].parts);
 
                 /* update the costs of the neighbor cells */
-                update_gains(scell, cells, nets, cnets, ncells,
+                update_gains(scell, hgraph.cells, hgraph.nets, hgraph.cnets, hgraph.ncells,
                              cells_info, pop[0].chrom);
                 cutsize += delta;
 
@@ -235,8 +230,8 @@ int main(int argc, char *argv[])
                 if (cutsize < best_cutsize) {
                     changed = True;
                     best_cutsize = cutsize;
-                    copy_pop(nocells, noparts, pop, best_pop);
-                    copy_nets(nonets, noparts, nets, best_nets);
+                    copy_pop(hgraph.nocells, noparts, pop, best_pop);
+                    copy_nets(hgraph.nonets, noparts, hgraph.nets, best_nets);
                 }   /* if */
 
             }   /* if the selected move is accepted */
@@ -274,7 +269,7 @@ int main(int argc, char *argv[])
 #ifdef DEBUG1
         printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n",
                pass_no, best_cutsize,
-               find_cut_size(nonets, noparts, totnetsize,
+               find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize,
                              best_nets, &best_pop[0]));
 #endif
 
@@ -286,7 +281,7 @@ int main(int argc, char *argv[])
 
     printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n",
            pass_no, best_cutsize,
-           find_cut_size(nonets, noparts, totnetsize, best_nets, &best_pop[0]));
+           find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize, best_nets, &best_pop[0]));
 
 #ifdef DEBUG1
     printf("Final : Part_no min_size curr_size max_size\n");
@@ -297,23 +292,23 @@ int main(int argc, char *argv[])
 #endif
 
     /* free memory for all data structures */
-    free(cells);
-    for (int i = 0; i < nocells; i++) {
+    free(hgraph.cells);
+    for (int i = 0; i < hgraph.nocells; i++) {
         free(cells_info[i].mgain);
     }
     free(cells_info);
 
-    for (int i = 0; i < nonets; i++) {
-        free(nets[i].npartdeg);
+    for (int i = 0; i < hgraph.nonets; i++) {
+        free(hgraph.nets[i].npartdeg);
         free(nets_info[i].npartdeg);
         free(best_nets[i].npartdeg);
     }
-    free(nets);
+    free(hgraph.nets);
     free(nets_info);
     free(best_nets);
 
-    free(cnets);
-    free(ncells);
+    free(hgraph.cnets);
+    free(hgraph.ncells);
 
     for (int i = 0; i < MAX_POP; i++) {
         free(pop[i].chrom);

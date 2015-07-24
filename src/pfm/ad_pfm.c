@@ -20,19 +20,13 @@
 
 int main(int argc, char *argv[])
 {
-    /* definitions */
-    int nocells;           /* number of cells */
-    int nonets;            /* number of nets */
-    int nopins;            /* number of pins */
+    /* the hypergraph to partition */
+    hypergraph_t hgraph;
+
+    /* partitioning variables */
     int noparts;           /* number of partitions */
-    int totcellsize;       /* total cell weight of the partition */
-    int totnetsize;         /* total net weight of the partition */
     int cutsize;           /* cutsize of the partition */
     int max_gain;          /* max gain of a cell */
-    int max_cdeg;          /* max density of a cell */
-    int max_ndeg;          /* max density of a net */
-    int max_cweight;       /* max cell weight */
-    int max_nweight;       /* max net weight */
 
     if (argc < 5) {
         printf("\nUsage: %s InputFileName NoParts Version BucketSizeFactor [Seed]\n", argv[0]);
@@ -56,13 +50,13 @@ int main(int argc, char *argv[])
     seed = randomize((long)  seed);
     printf("SEED = %ld fname = %s\n", seed, fname);
 
-    read_hgraph_size(fname, &nocells, &nonets, &nopins);
+    read_hgraph_size(fname, &hgraph.nocells, &hgraph.nonets, &hgraph.nopins);
 
     /* determine max_noiter based on pfm version */
     /* pfm1: size=max_cells;
        pfm2: size=max_cells * max_parts;
        pfm3: size=max_cells * max_parts^2 */
-    int max_noiter = nocells;
+    int max_noiter = hgraph.nocells;
     switch (version) {
     case 1 : break;
     case 2 : max_noiter *= noparts; break;
@@ -71,11 +65,11 @@ int main(int argc, char *argv[])
     }
 
     /* alloc memory for all data structures */
-    cells_t *cells = (cells_t *) calloc(nocells, sizeof(cells_t));
-    assert(cells != NULL);
-    cells_info_t *cells_info = (cells_info_t *) calloc(nocells, sizeof(cells_info_t));
+    hgraph.cells = (cells_t *) calloc(hgraph.nocells, sizeof(cells_t));
+    assert(hgraph.cells != NULL);
+    cells_info_t *cells_info = (cells_info_t *) calloc(hgraph.nocells, sizeof(cells_info_t));
     assert(cells_info != NULL);
-    for (int i = 0; i < nocells; i++) {
+    for (int i = 0; i < hgraph.nocells; i++) {
         cells_info[i].mgain = (int *) calloc(noparts, sizeof(int));
         assert(cells_info[i].mgain != NULL);
         cells_info[i].partb_ptr = (bnode_ptr_t *) calloc(noparts - 1, sizeof(bnode_ptr_t));
@@ -84,23 +78,23 @@ int main(int argc, char *argv[])
         assert(cells_info[i].partb_gain_inx != NULL);
     }
 
-    nets_t *nets = (nets_t *) calloc(nonets, sizeof(nets_t));
-    assert(nets != NULL);
-    nets_info_t *nets_info = (nets_info_t *) calloc(nonets, sizeof(nets_info_t));
+    hgraph.nets = (nets_t *) calloc(hgraph.nonets, sizeof(nets_t));
+    assert(hgraph.nets != NULL);
+    nets_info_t *nets_info = (nets_info_t *) calloc(hgraph.nonets, sizeof(nets_info_t));
     assert(nets_info != NULL);
-    for (int i = 0; i < nonets; i++) {
-        nets[i].npartdeg = (int *) calloc(noparts, sizeof(int));
-        assert(nets[i].npartdeg != NULL);
+    for (int i = 0; i < hgraph.nonets; i++) {
+        hgraph.nets[i].npartdeg = (int *) calloc(noparts, sizeof(int));
+        assert(hgraph.nets[i].npartdeg != NULL);
         nets_info[i].npartdeg = (int *) calloc(noparts, sizeof(int));
         assert(nets_info[i].npartdeg != NULL);
     }
 
     /* cells of nets */
-    corn_t *cnets = (corn_t *) calloc(nopins, sizeof(corn_t));
-    assert(cnets != NULL);
+    hgraph.cnets = (corn_t *) calloc(hgraph.nopins, sizeof(corn_t));
+    assert(hgraph.cnets != NULL);
     /* nets of cells */
-    corn_t *ncells = (corn_t *) calloc(nopins, sizeof(corn_t));
-    assert(ncells != NULL);
+    hgraph.ncells = (corn_t *) calloc(hgraph.nopins, sizeof(corn_t));
+    assert(hgraph.ncells != NULL);
 
     /* partition buckets */
     partb_t partb[noparts][noparts - 1];
@@ -109,7 +103,7 @@ int main(int argc, char *argv[])
     /* population (w/ one individual!) */
     ind_t pop[MAX_POP];
     for (int i = 0; i < MAX_POP; i++) {
-        pop[i].chrom = (allele *) calloc(nocells, sizeof(allele));
+        pop[i].chrom = (allele *) calloc(hgraph.nocells, sizeof(allele));
         assert(pop[i].chrom != NULL);
         pop[i].parts = (parts_t *) calloc(noparts, sizeof(parts_t));
         assert(pop[i].parts != NULL);
@@ -124,18 +118,18 @@ int main(int argc, char *argv[])
     assert(mcells != NULL);
 
     /* temp chrom */
-    allele *tchrom = (allele *) calloc(nocells, sizeof(allele));
+    allele *tchrom = (allele *) calloc(hgraph.nocells, sizeof(allele));
     assert(tchrom != NULL);
 
     /* in read_graph, change tnoparts -> noparts & delete the line (D) */
-    read_hgraph(fname, nocells, nonets, nopins, noparts,
-                &totcellsize, &totnetsize, &max_cdeg, &max_ndeg,
-                &max_cweight, &max_nweight,
-                cells, nets, cnets, ncells);
+    read_hgraph(fname, hgraph.nocells, hgraph.nonets, hgraph.nopins, noparts,
+                &hgraph.totcellsize, &hgraph.totnetsize, &hgraph.max_cdeg, &hgraph.max_ndeg,
+                &hgraph.max_cweight, &hgraph.max_nweight,
+                hgraph.cells, hgraph.nets, hgraph.cnets, hgraph.ncells);
 
     float off_ratio = (float) 0.1; /* alpha in initial partitioning */
-    create_partition(nocells, noparts, totcellsize, max_cweight, &off_ratio,
-                     cells, nets, cnets, &pop[0]);
+    create_partition(hgraph.nocells, noparts, hgraph.totcellsize, hgraph.max_cweight, &off_ratio,
+                     hgraph.cells, hgraph.nets, hgraph.cnets, &pop[0]);
 
 #ifdef DEBUG
     printf("Initial : Part_no min_size curr_size max_size\n");
@@ -147,7 +141,7 @@ int main(int argc, char *argv[])
 
     /* bucketsize has impact on cutsize and runtime */
     float K;
-    max_gain = max_cdeg * max_nweight;
+    max_gain = hgraph.max_cdeg * hgraph.max_nweight;
     int bucketsize = 2 * max_gain + 1;
     if (bucketsize_factor > 0) {
         bucketsize *= bucketsize_factor;
@@ -155,7 +149,7 @@ int main(int argc, char *argv[])
 
     /* cache to speed up math heavy function evals */
     eval_t *eval = (eval_t *) calloc(2 * max_gain + 1, sizeof(eval_t));
-    calculate_scale(nocells, noparts, max_gain, &K);
+    calculate_scale(hgraph.nocells, noparts, max_gain, &K);
     fill_eval(max_gain, K, eval);
 
     /* alloc memory (statically if possible) */
@@ -166,11 +160,11 @@ int main(int argc, char *argv[])
     }
 
     init_buckets(noparts, bucketsize, partb);
-    cutsize = find_cut_size(nonets, noparts, totnetsize, nets, &pop[0]);
+    cutsize = find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize, hgraph.nets, &pop[0]);
 
 #ifdef DEBUG
     printf("BB bucketsize=%d\n", bucketsize);
-    printf("Totalsize = %d Initial cutsize = %d\n", totnetsize, cutsize);
+    printf("Totalsize = %d Initial cutsize = %d\n", hgraph.totnetsize, cutsize);
 #endif
 
     int gain_sum;
@@ -180,16 +174,16 @@ int main(int argc, char *argv[])
 
         copy_partition(noparts, parts_info, &pop[0]);
 
-        copy_nets_info(nonets, noparts, nets, nets_info);
+        copy_nets_info(hgraph.nonets, noparts, hgraph.nets, nets_info);
 
-        for (int i = 0; i < nocells; i++) {
+        for (int i = 0; i < hgraph.nocells; i++) {
             tchrom[i] = pop[0].chrom[i];
         }
 
-        compute_gains(nocells, noparts, cells, nets, cnets,
+        compute_gains(hgraph.nocells, noparts, hgraph.cells, hgraph.nets, hgraph.cnets,
                       cells_info, pop[0].chrom);
 
-        create_buckets(bucketsize, nocells, noparts, max_gain, eval, pop[0].chrom,
+        create_buckets(bucketsize, hgraph.nocells, noparts, max_gain, eval, pop[0].chrom,
                        partb, cells_info);
 
         prev_scell[0].mov_cell_no = -1;
@@ -198,7 +192,7 @@ int main(int argc, char *argv[])
         int mov_count = 0; /* count of total moves */
         while (mov_count < max_noiter) {
 
-            select_cell(noparts, scell, parts_info, cells, partb, cells_info);
+            select_cell(noparts, scell, parts_info, hgraph.cells, partb, cells_info);
 
             move_cell(mcells, msize, scell, tchrom, cells_info);
 
@@ -211,7 +205,7 @@ int main(int argc, char *argv[])
                                        eval, partb, cells_info);
 
             update_gains(bucketsize, noparts, max_gain, eval, scell,
-                         cells, nets, cnets, ncells, nets_info,
+                         hgraph.cells, hgraph.nets, hgraph.cnets, hgraph.ncells, nets_info,
                          partb, cells_info, tchrom);
 
             /* currently moved cell becomes previous cell */
@@ -233,8 +227,8 @@ int main(int argc, char *argv[])
 #endif
 
         if (gain_sum > 0) {
-            int cut_gain = move_cells(False, nocells, msize, mcells, max_mcells_inx,
-                                      cutsize, &glob_inx, &pop[0], cells, nets, cnets);
+            int cut_gain = move_cells(False, hgraph.nocells, msize, mcells, max_mcells_inx,
+                                      cutsize, &glob_inx, &pop[0], hgraph.cells, hgraph.nets, hgraph.cnets);
             cutsize -= cut_gain;
         }   /* if */
         pass_no++;
@@ -242,7 +236,7 @@ int main(int argc, char *argv[])
 #ifdef DEBUG
         printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n",
                pass_no, cutsize,
-               find_cut_size (nonets, noparts, totnetsize, nets, &pop[0]));
+               find_cut_size (hgraph.nonets, noparts, hgraph.totnetsize, hgraph.nets, &pop[0]));
 #endif
 
         free_nodes(noparts, bucketsize, partb);
@@ -251,7 +245,7 @@ int main(int argc, char *argv[])
     /* or (pass_no < noparts) */
 
     printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n", pass_no,
-           cutsize, find_cut_size(nonets, noparts, totnetsize, nets, &pop[0]));
+           cutsize, find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize, hgraph.nets, &pop[0]));
 
 #ifdef DEBUG
     printf("Final : Part_no min_size curr_size max_size\n");
@@ -262,23 +256,23 @@ int main(int argc, char *argv[])
 #endif
 
     /* free memory for all data structures */
-    free(cells);
-    for (int i = 0; i < nocells; i++) {
+    free(hgraph.cells);
+    for (int i = 0; i < hgraph.nocells; i++) {
         free(cells_info[i].mgain);
         free(cells_info[i].partb_ptr);
         free(cells_info[i].partb_gain_inx);
     }
     free(cells_info);
 
-    for (int i = 0; i < nonets; i++) {
-        free(nets[i].npartdeg);
+    for (int i = 0; i < hgraph.nonets; i++) {
+        free(hgraph.nets[i].npartdeg);
         free(nets_info[i].npartdeg);
     }
-    free(nets);
+    free(hgraph.nets);
     free(nets_info);
 
-    free(cnets);
-    free(ncells);
+    free(hgraph.cnets);
+    free(hgraph.ncells);
 
     for (int i = 0; i < noparts; i++) {
         for (int j = 0; j < noparts - 1; ++j) {
