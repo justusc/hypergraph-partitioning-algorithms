@@ -8,6 +8,7 @@
         print "Passed:", s;
     } else {
         print "Failed:", s;
+        exit 1
     }
 }
 

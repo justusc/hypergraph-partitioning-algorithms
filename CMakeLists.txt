@@ -11,6 +11,10 @@ endif ()
 
 include_directories(src/share)
 
+# Add check target
+enable_testing()
+add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V)
+
 add_subdirectory(src/share)
 add_subdirectory(src/fms)
 add_subdirectory(src/pfm)
