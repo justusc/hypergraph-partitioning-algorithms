@@ -67,11 +67,9 @@ int main(int argc, char *argv[])
     seed = randomize((long) seed);
     printf("SEED = %ld fname = %s\n", seed, fname);
 
-    read_hgraph_size(fname, &hgraph.nocells, &hgraph.nonets, &hgraph.nopins);
+    read_hgraph(fname, &hgraph);
 
     /* alloc memory for all data structures */
-    hgraph.cells = (cells_t *) calloc(hgraph.nocells, sizeof(cells_t));
-    assert(hgraph.cells != NULL);
     cells_info_t *cells_info = (cells_info_t *) calloc(hgraph.nocells, sizeof(cells_info_t));
     assert(cells_info != NULL);
     for (int i = 0; i < hgraph.nocells; i++) {
@@ -81,23 +79,17 @@ int main(int argc, char *argv[])
         cells_info[i].partb_gain_inx = NULL;
     }
 
-    hgraph.nets = (nets_t *) calloc(hgraph.nonets, sizeof(nets_t));
-    assert(hgraph.nets != NULL);
     nets_info_t *nets_info = (nets_info_t *) calloc(hgraph.nonets, sizeof(nets_info_t));
     assert(nets_info != NULL);
     for (int i = 0; i < hgraph.nonets; i++) {
-        hgraph.nets[i].npartdeg = (int *) calloc(noparts, sizeof(int));
-        assert(hgraph.nets[i].npartdeg != NULL);
         nets_info[i].npartdeg = (int *) calloc(noparts, sizeof(int));
         assert(nets_info[i].npartdeg != NULL);
+        hgraph.nets[i].npartdeg = (int *) calloc(noparts, sizeof(int));
+        assert(hgraph.nets[i].npartdeg != NULL);
+        for (int j = 0; j < noparts; j++) {
+            hgraph.nets[i].npartdeg[j] = 0;
+        }
     }
-
-    /* cells of nets */
-    hgraph.cnets = (corn_t *) calloc(hgraph.nopins, sizeof(corn_t));
-    assert(hgraph.cnets != NULL);
-    /* nets of cells */
-    hgraph.ncells = (corn_t *) calloc(hgraph.nopins, sizeof(corn_t));
-    assert(hgraph.ncells != NULL);
 
     /* population (w/ one individual!) */
     ind_t pop[MAX_POP];
@@ -128,11 +120,6 @@ int main(int argc, char *argv[])
         best_pop[i].parts = (parts_t *) calloc(noparts, sizeof(parts_t));
         assert(best_pop[i].parts != NULL);
     }
-
-    read_hgraph(fname, hgraph.nocells, hgraph.nonets, hgraph.nopins, noparts,
-                &hgraph.totcellsize, &hgraph.totnetsize, &hgraph.max_cdeg, &hgraph.max_ndeg,
-                &hgraph.max_cweight, &hgraph.max_nweight,
-                hgraph.cells, hgraph.nets, hgraph.cnets, hgraph.ncells);
 
 
     /* create the initial partition or solution */
@@ -307,23 +294,17 @@ int main(int argc, char *argv[])
 #endif
 
     /* free memory for all data structures */
-    free(hgraph.cells);
     for (int i = 0; i < hgraph.nocells; i++) {
         free(cells_info[i].mgain);
     }
     free(cells_info);
 
     for (int i = 0; i < hgraph.nonets; i++) {
-        free(hgraph.nets[i].npartdeg);
         free(nets_info[i].npartdeg);
         free(best_nets[i].npartdeg);
     }
-    free(hgraph.nets);
     free(nets_info);
     free(best_nets);
-
-    free(hgraph.cnets);
-    free(hgraph.ncells);
 
     for (int i = 0; i < MAX_POP; i++) {
         free(pop[i].chrom);
@@ -331,6 +312,8 @@ int main(int argc, char *argv[])
         free(best_pop[i].chrom);
         free(best_pop[i].parts);
     }
+
+    free_hypergraph(&hgraph);
 
     return (0);
 }   /* main-sa2 */
