@@ -7,6 +7,7 @@
 #include "ad_defs.h"
 #include "ad_random.h"
 #include "ad_fileio.h"
+#include "ad_hypergraph.h"
 #include "ad_readinput.h"
 #include "ad_partition.h"
 #include "ad_print.h"
