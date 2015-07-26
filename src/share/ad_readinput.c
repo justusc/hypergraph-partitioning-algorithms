@@ -8,6 +8,7 @@
 #include <errno.h>
 #include "ad_defs.h"
 #include "ad_fileio.h"
+#include "ad_hypergraph.h"
 #include "ad_readinput.h"
 
 
