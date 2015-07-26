@@ -135,7 +135,7 @@ int main(int argc, char *argv[])
     create_partition(hgraph.nocells, noparts, hgraph.totcellsize, hgraph.max_cweight, &off_ratio,
                      hgraph.cells, hgraph.nets, hgraph.cnets, &pop[0]);
 
-#ifdef DEBUG
+#ifndef NDEBUG
     printf("off=%f\n", off_ratio);
     for (int i = 0; i < noparts; i++) {
         printf("II %d %d %d %d\n", i, pop[0].parts[i].pmin_size,
@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
     init_buckets(noparts, bucketsize, partb);
     cutsize = find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize, hgraph.nets, &pop[0]);
 
-#ifdef DEBUG
+#ifndef NDEBUG
     printf("Totalsize = %d Initial cutsize = %d\n", hgraph.totnetsize, cutsize);
 #endif
 
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
         int max_mcells_inx;
         gain_sum = find_move_set(mcells, msize, &max_mcells_inx);
 
-#ifdef DEBUG
+#ifndef NDEBUG
         printf("gain_sum=%d max_mcells_inx=%d msize = %d\n",
                gain_sum, max_mcells_inx, msize);
 #endif
@@ -214,7 +214,7 @@ int main(int argc, char *argv[])
         }   /* if */
         pass_no++;
 
-#ifdef DEBUG
+#ifndef NDEBUG
         printf("pass_no = %d Final cutsize = %d Check cutsize = %d\n",
                pass_no, cutsize,
                find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize, hgraph.nets, &pop[0]));
@@ -227,7 +227,7 @@ int main(int argc, char *argv[])
 
     free_nodes(noparts, bucketsize, partb);
 
-#ifdef DEBUG
+#ifndef NDEBUG
     printf("Final : Part_no min_size curr_size max_size\n");
     for (int i = 0; i < noparts; i++) {
         printf("FF %d %d %d %d\n", i, pop[0].parts[i].pmin_size,

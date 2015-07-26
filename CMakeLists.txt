@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.1.0)
 project(HGPA C)
 
+option(ENABLE_TRACE "Enable partition trace" OFF)
+
+if(ENABLE_TRACE)
+  add_definitions(-DAD_TRACE=1)
+endif()
+
 # Add c99 Standard flag
 if (CMAKE_VERSION VERSION_LESS "3.1")
   set(CMAKE_C_FLAGS "--std=c99 ${CMAKE_C_FLAGS}")

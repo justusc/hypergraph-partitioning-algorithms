@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     create_partition(hgraph.nocells, noparts, hgraph.totcellsize, hgraph.max_cweight, &off_ratio,
                      hgraph.cells, hgraph.nets, hgraph.cnets, &pop[0]);
 
-#ifdef DEBUG1
+#ifndef AD_TRACE
     printf("off=%f\n", off_ratio);
     printf("Initial : Part_no min_size curr_size max_size\n");
     for (int i = 0; i < noparts; i++) {
@@ -141,7 +141,7 @@ int main(int argc, char *argv[])
     /* find initial cutsize */
     cutsize = find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize, hgraph.nets, &pop[0]);
 
-#if DEBUG
+#ifndef NDEBUG
     printf("Totalsize = %d Initial cutsize = %d\n", hgraph.totnetsize, cutsize);
 #endif
 
@@ -195,7 +195,7 @@ int main(int argc, char *argv[])
                 (((float) delta > 0.0) &&
                  (rand01() <= (float) exp((double) -delta / (double) temperature)))) {
 
-#ifdef DEBUG2
+#ifdef AD_TRACE
                 printf ("cell=%d from=%d to=%d gain=%d\n",
                         scell[0].mov_cell_no, scell[0].from_part,
                         scell[0].to_part, scell[0].mov_gain);
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
             }   /* if the selected move is accepted */
         }   /* for */
 
-#ifdef DEBUG1
+#ifdef AD_TRACE
         printf("changes=%d trials=%d \% accept=%f temperature=%f\n",
                nochanges, notrials,
                (100.0 * (float) nochanges / notrials), temperature);
@@ -237,7 +237,7 @@ int main(int argc, char *argv[])
         /* update variables of SA algorithm */
         pass_no++;
 
-#ifdef DEBUG1
+#ifdef AD_TRACE
         printf("pass_no = %d Region=%d%d%d Final cutsize  = %d Check cutsize = %d\n",
                pass_no, region2, region3, region4, cutsize,
                find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize, best_nets, &best_pop[0]));
@@ -285,7 +285,7 @@ int main(int argc, char *argv[])
            pass_no, best_cutsize,
            find_cut_size(hgraph.nonets, noparts, hgraph.totnetsize, best_nets, &best_pop[0]));
 
-#ifdef DEBUG1
+#ifdef AD_TRACE
     printf("Final : Part_no min_size curr_size max_size\n");
     for (int i = 0; i < noparts; i++) {
         printf("FF %d %d %d %d\n", i, pop[0].parts[i].pmin_size,
