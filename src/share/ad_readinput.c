@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
-#include "ad_defs.h"
-#include "ad_fileio.h"
-#include "ad_hypergraph.h"
-#include "ad_readinput.h"
+#include "hpga/ad_defs.h"
+#include "hpga/ad_fileio.h"
+#include "hpga/ad_hypergraph.h"
+#include "hpga/ad_readinput.h"
 
 
 /* read input hypergraph and construct cells, nets, cnets, & ncells arrays */

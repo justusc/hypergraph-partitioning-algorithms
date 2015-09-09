@@ -1,13 +1,13 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "ad_defs.h"
-#include "ad_bucketio.h"
-#include "ad_lib.h"
-#include "ad_lib_pfm.h"
+#include "hpga/ad_defs.h"
+#include "hpga/ad_bucketio.h"
+#include "hpga/ad_lib.h"
+#include "hpga/ad_lib_pfm.h"
 
 /*
   ALSO TRY THESE:
@@ -29,12 +29,12 @@ int map_gain(int bucketsize,
     if (mcount == 0) {
         mcount = 1;
     }
-    float mov_value = ((float) (bucketsize) / 
+    float mov_value = ((float) (bucketsize) /
                        (1.0 + (float) sqrt ((double) (mcount)) *
                         (float) eval[max_gain - mov_gain].val));
     return ((int) mov_value);
 }   /* map_gain */
- 
+
 /* fill all bucket arrays */
 void create_buckets(int bucketsize,
                     int nocells,
@@ -113,7 +113,7 @@ void select_cell(int noparts,
         exit(1);
     }   /* if */
 
-    scell[0].mov_gain = calculate_gain(scell[0].mov_cell_no, 
+    scell[0].mov_gain = calculate_gain(scell[0].mov_cell_no,
                                        scell[0].from_part,
                                        scell[0].to_part,
                                        cells_info);
@@ -134,9 +134,9 @@ void move_cell(mcells_t mcells[],
 {
     tchrom[scell[0].mov_cell_no] = scell[0].to_part;
     cells_info[scell[0].mov_cell_no].mcount++;
-    mcells[msize].cell_no = scell[0].mov_cell_no; 
-    mcells[msize].from = scell[0].from_part; 
-    mcells[msize].to = scell[0].to_part; 
+    mcells[msize].cell_no = scell[0].mov_cell_no;
+    mcells[msize].from = scell[0].from_part;
+    mcells[msize].to = scell[0].to_part;
     mcells[msize].mgain = scell[0].mov_gain;
 }   /* move_cell */
 
@@ -170,13 +170,13 @@ void update_gains(int bucketsize,
         /* do operations before the move */
         if (nets_info[net_no].npartdeg[from_part] == nets[net_no].nno_cells) {
 
-            update1(False, bucketsize, noparts, max_gain, from_part, mov_cell_no, 
+            update1(False, bucketsize, noparts, max_gain, from_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     eval, nets, ncells, partb, cells_info, tchrom);
 
         } else if (nets_info[net_no].npartdeg[from_part] == (nets[net_no].nno_cells - 1)) {
 
-            update2(False, bucketsize, noparts, max_gain, from_part, mov_cell_no, 
+            update2(False, bucketsize, noparts, max_gain, from_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     eval, nets, ncells, partb, cells_info, tchrom);
 
@@ -189,13 +189,13 @@ void update_gains(int bucketsize,
         /* do operations after the move */
         if (nets_info[net_no].npartdeg[to_part] == nets[net_no].nno_cells) {
 
-            update1(True, bucketsize, noparts, max_gain, to_part, mov_cell_no, 
+            update1(True, bucketsize, noparts, max_gain, to_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     eval, nets, ncells, partb, cells_info, tchrom);
 
         } else if (nets_info[net_no].npartdeg[to_part] == (nets[net_no].nno_cells - 1)) {
 
-            update2(True, bucketsize, noparts, max_gain, to_part, mov_cell_no, 
+            update2(True, bucketsize, noparts, max_gain, to_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     eval, nets, ncells, partb, cells_info, tchrom);
 
@@ -280,7 +280,7 @@ void update2(int flag,
     }   /* while */
 
     if (!found) return;
-    
+
     if (flag == False) {
         cells_info[other_cell].mgain[dest_part] -= net_weight;
     } else {
@@ -289,7 +289,7 @@ void update2(int flag,
 
     int mov_gain = calculate_gain(other_cell, other_part_no,
                                   dest_part, cells_info);
-    int gain_inx = map_gain(bucketsize, mov_gain, cells_info[other_cell].mcount, 
+    int gain_inx = map_gain(bucketsize, mov_gain, cells_info[other_cell].mcount,
                             max_gain, eval);
     int mapped_part_no = map_part_no(dest_part, other_part_no);
     bnode_ptr_t tnode_ptr = delete_partb_node(False, mapped_part_no,

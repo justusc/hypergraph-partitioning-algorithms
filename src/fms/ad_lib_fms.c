@@ -1,17 +1,17 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
-#include "ad_defs.h"
-#include "ad_bucketio.h"
-#include "ad_lib.h"
-#include "ad_lib_fms.h"
+#include "hpga/ad_defs.h"
+#include "hpga/ad_bucketio.h"
+#include "hpga/ad_lib.h"
+#include "hpga/ad_lib_fms.h"
 
 /* map a given mov_gain into index to a bucket array */
 int map_gain(int mov_gain, int max_gain)
 {
     return (mov_gain + max_gain);
 }   /* map_gain */
- 
+
 /* fill all bucket arrays */
 void create_buckets(int nocells,
                     int noparts,
@@ -60,7 +60,7 @@ int select_cell(int noparts,
     for (int from = 0; from < noparts; from++) {
         int fpcurr_size = parts_info[from].pcurr_size;
         int fpmin_size = parts_info[from].pmin_size;
-        if (fpcurr_size > fpmin_size) { 
+        if (fpcurr_size > fpmin_size) {
             for (int to = 0; to < noparts; to++) {
                 int tpmax_size = parts_info[to].pmax_size;
                 int tpcurr_size = parts_info[to].pcurr_size;
@@ -111,7 +111,7 @@ int select_cell(int noparts,
                     int max_inx = partb[from][dest_part].max_inx;
                     if (max_inx > 0) {
                         int cell_no = partb[from][dest_part].bnode_ptr[max_inx]->cell_no;
-                        if (max_mov_value < max_inx) { 
+                        if (max_mov_value < max_inx) {
                             max_mov_value = max_inx;
                             scell[0].mov_cell_no = cell_no;
                             scell[0].from_part = from;
@@ -131,9 +131,9 @@ void move_cell(mcells_t mcells[],
                int msize,
                selected_cell_t scell[])
 {
-    mcells[msize].cell_no = scell[0].mov_cell_no; 
-    mcells[msize].from = scell[0].from_part; 
-    mcells[msize].to = scell[0].to_part; 
+    mcells[msize].cell_no = scell[0].mov_cell_no;
+    mcells[msize].from = scell[0].from_part;
+    mcells[msize].to = scell[0].to_part;
     mcells[msize].mgain = scell[0].mov_gain;
 }   /* move_cell */
 
@@ -165,13 +165,13 @@ void update_gains(int noparts,
         /* do operations before the move */
         if (nets_info[net_no].npartdeg[from_part] == nets[net_no].nno_cells) {
 
-            update1(False, noparts, max_gain, from_part, mov_cell_no, 
+            update1(False, noparts, max_gain, from_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     nets, ncells, partb, cells_info, tchrom);
 
         } else if (nets_info[net_no].npartdeg[from_part] == (nets[net_no].nno_cells - 1)) {
 
-            update2(False, noparts, max_gain, from_part, mov_cell_no, 
+            update2(False, noparts, max_gain, from_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     nets, ncells, partb, cells_info, tchrom);
 
@@ -184,13 +184,13 @@ void update_gains(int noparts,
         /* do operations after the move */
         if (nets_info[net_no].npartdeg[to_part] == nets[net_no].nno_cells) {
 
-            update1(True, noparts, max_gain, to_part, mov_cell_no, 
+            update1(True, noparts, max_gain, to_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     nets, ncells, partb, cells_info, tchrom);
 
         } else if (nets_info[net_no].npartdeg[to_part] == (nets[net_no].nno_cells - 1)) {
 
-            update2(True, noparts, max_gain, to_part, mov_cell_no, 
+            update2(True, noparts, max_gain, to_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     nets, ncells, partb, cells_info, tchrom);
 

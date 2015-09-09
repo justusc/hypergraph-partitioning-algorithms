@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.1.0)
 project(HGPA C)
 
+include(CMakeDependentOption)
+
+get_property(SUPPORTS_SHARED GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS)
+cmake_dependent_option(BUILD_SHARED_LIBS "Enable shared libraries" ON
+      "SUPPORTS_SHARED;ENABLE_SHARED_LIBRARIES" OFF)
 option(ENABLE_TRACE "Enable partition trace" OFF)
 
 if(ENABLE_TRACE)
@@ -20,6 +25,8 @@ include_directories(src/share)
 # Add check target
 enable_testing()
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V)
+
+include_directories(include)
 
 add_subdirectory(src/share)
 add_subdirectory(src/fms)

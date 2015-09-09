@@ -1,17 +1,17 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "ad_defs.h"
-#include "ad_random.h"
-#include "ad_bucketio.h"
-#include "ad_lib.h"
-#include "ad_lib_sa.h"
+#include "hpga/ad_defs.h"
+#include "hpga/ad_random.h"
+#include "hpga/ad_bucketio.h"
+#include "hpga/ad_lib.h"
+#include "hpga/ad_lib_sa.h"
 
 /* randomly select a move among (nocells * (noparts - 1)) move directions */
-int select_cell(int nocells, 
+int select_cell(int nocells,
                 int noparts,
                 selected_cell_t scell[],
                 allele tchrom[],
@@ -24,10 +24,10 @@ int select_cell(int nocells,
     int nochecks = 0;    /* number of cells tried */
     while ((! selected) && (nochecks < nocells)) {
         nochecks++;
-        int from = tchrom[cell_no]; 
+        int from = tchrom[cell_no];
         int to = find_to_part(noparts, cell_no, from, cells, parts);
         /* no directions for this cell are feasible, so try another */
-        if ((to < 0) || (parts[from].pmax_cells < 1)) {  
+        if ((to < 0) || (parts[from].pmax_cells < 1)) {
             cell_no = (cell_no + 1) % nocells;
         } else {
             selected = True;
@@ -49,7 +49,7 @@ int select_cell(int nocells,
 
 /* find a to part to which the selected cell is to be moved */
 /* return -1 if not found */
-int find_to_part(int noparts, 
+int find_to_part(int noparts,
                  int cell_no,
                  int from,
                  cells_t cells[],
@@ -131,16 +131,16 @@ void update_gains(selected_cell_t scell[],
         /* do operations before the move */
         if (nets[net_no].npartdeg[from_part] == nets[net_no].nno_cells) {
 
-            update1(False, from_part, mov_cell_no, 
+            update1(False, from_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     nets, ncells, cells_info);
 
         } else if (nets[net_no].npartdeg[from_part] == (nets[net_no].nno_cells - 1)) {
 
-            update2(False, from_part, mov_cell_no, 
+            update2(False, from_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     nets, ncells, cells_info, tchrom);
-            
+
         }   /* else */
 
         /* update net info */
@@ -150,13 +150,13 @@ void update_gains(selected_cell_t scell[],
         /* do operations after the move */
         if (nets[net_no].npartdeg[to_part] == nets[net_no].nno_cells) {
 
-            update1(True, to_part, mov_cell_no, 
+            update1(True, to_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     nets, ncells, cells_info);
 
         } else if (nets[net_no].npartdeg[to_part] == (nets[net_no].nno_cells - 1)) {
 
-            update2(True, to_part, mov_cell_no, 
+            update2(True, to_part, mov_cell_no,
                     cell_ptr, net_no, net_weight,
                     nets, ncells, cells_info, tchrom);
 
@@ -232,11 +232,11 @@ void update2(int flag,
 /* copy pop structures */
 void copy_pop(int nocells,
               int noparts,
-              ind_t from_pop[], 
+              ind_t from_pop[],
               ind_t to_pop[])
 {
     for (int i = 0; i < nocells; i++) {
-        to_pop[0].chrom[i] = from_pop[0].chrom[i]; 
+        to_pop[0].chrom[i] = from_pop[0].chrom[i];
     }   /* for i */
     for (int i = 0; i < noparts; i++) {
         to_pop[0].parts[i].pmax_cells = from_pop[0].parts[i].pmax_cells;
@@ -260,7 +260,7 @@ void copy_nets(int nonets,
         to_nets[i].celllist = from_nets[i].celllist;
         for (int j = 0; j < noparts; j++) {
             to_nets[i].npartdeg[j] = from_nets[i].npartdeg[j];
-        }        
+        }
     }
 }  /* copy_nets */
 

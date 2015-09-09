@@ -3,8 +3,8 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "ad_defs.h"
-#include "ad_bucketio.h"
+#include "hpga/ad_defs.h"
+#include "hpga/ad_bucketio.h"
 
 /* create a partb node */
 void create_partb_node(int noparts,

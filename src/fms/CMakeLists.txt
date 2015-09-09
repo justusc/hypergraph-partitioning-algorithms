@@ -1,5 +1,7 @@
-add_executable(ad_fms ad_fms.c ad_lib_fms.c ad_lib_fms.h)
-target_link_libraries(ad_fms ad)
+add_library(libfms ad_lib_fms.c)
+
+add_executable(ad_fms ad_fms.c)
+target_link_libraries(ad_fms libfms libhgpa)
 
 
 add_dependencies(check ad_fms)

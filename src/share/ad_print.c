@@ -1,9 +1,9 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
 #include <stdio.h>
-#include "ad_defs.h"
-#include "ad_print.h"
+#include "hpga/ad_defs.h"
+#include "hpga/ad_print.h"
 
 void print_hgraph(int nocells,
                   int nonets,
@@ -15,12 +15,12 @@ void print_hgraph(int nocells,
     printf("%d\n%d\n", nocells, nonets);
     for (int i = 0; i < nonets; i++) {
         printf("%d %d ", nets[i].nweight, nets[i].nno_cells);
-        for (int j = 0; j < nets[i].nno_cells; j++) 
+        for (int j = 0; j < nets[i].nno_cells; j++)
             printf("%d ", ncells[j + nets[i].celllist].corn_no);
-        printf("\n"); 
+        printf("\n");
     }   /* for i */
-    for (int i = 0; i < nocells; i++) 
-        printf("%d\n", cells[i].cweight); 
+    for (int i = 0; i < nocells; i++)
+        printf("%d\n", cells[i].cweight);
 }   /* print_hgraph */
 
 void print_vars(int nocells,
@@ -71,7 +71,7 @@ void print_ncells(int nopins, corn_t ncells[])
     printf("\n");
 }   /* print_ncells */
 
-void print_parts(int nocells, 
+void print_parts(int nocells,
                  int noparts,
                  ind_t *ind,
                  allele tchrom[])
@@ -137,7 +137,7 @@ void print_cells(int nocells,
     int totsize = 0;
     for (int i = 0; i < nocells; i++) {
 
-        printf("c=%d #n=%d cw=%d nl=%d ns= ", 
+        printf("c=%d #n=%d cw=%d nl=%d ns= ",
                i, cells[i].cno_nets, cells[i].cweight, cells[i].netlist);
 
         totsize += cells[i].cweight;
@@ -167,18 +167,18 @@ void print_nets(int nonets,
 
         totsize += nets[i].nweight;
 
-        for (int j = 0; j < noparts; j++) 
+        for (int j = 0; j < noparts; j++)
             printf("%d:%d ", j, nets[i].npartdeg[j]);
 
         printf("\ncs= ");
 
-        for (int j = 0; j < nets[i].nno_cells; j++) 
-            printf("%d ", ncells[nets[i].celllist + j].corn_no); 
+        for (int j = 0; j < nets[i].nno_cells; j++)
+            printf("%d ", ncells[nets[i].celllist + j].corn_no);
 
         printf("\n");
 
     }   /* for i*/
- 
+
     printf("totnetsize= %d\n", totsize);
 }   /* print_nets */
 
@@ -198,7 +198,7 @@ void print_cells_info(int nocells,
     printf("\nCELLS_INFO\n");
     for (int i = 0; i < nocells; i++) {
         printf("c=%d mc=%d l=%d mg= ", i, cells_info[i].mcount, cells_info[i].locked);
-        for (int j = 0; j < noparts; j++) 
+        for (int j = 0; j < noparts; j++)
             printf("%d ", cells_info[i].mgain[j]);
         printf("\n");
     }   /* for i */

@@ -1,9 +1,9 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
 #include <time.h>
 #include <stdlib.h>
-#include "ad_random.h"
+#include "hpga/ad_random.h"
 
 /* initializes random number generator with seed or */
 /* with any value if seed = -1 */
@@ -13,7 +13,7 @@ long randomize(long seed)
 
     if (seed == -1) {
         time(&in_seed);  /* init with current time */
-    } else { 
+    } else {
         in_seed = seed;   /* init with seed */
     }
     srand48(in_seed);
@@ -40,6 +40,6 @@ int irandom(int min, int max)
         }
         return retval;
     }   /* else */
-}     /* irandom */ 
+}     /* irandom */
 
 /* EOF */

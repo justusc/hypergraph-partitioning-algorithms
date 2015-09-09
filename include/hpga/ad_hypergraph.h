@@ -1,7 +1,7 @@
 #ifndef AD_HYPERGRAPH_H__INCLUDED
 #define AD_HYPERGRAPH_H__INCLUDED
 
-#include "ad_defs.h"
+#include "hpga/ad_defs.h"
 
 /* initialize cells array */
 void init_cells(int nocells, cells_t cells[]);

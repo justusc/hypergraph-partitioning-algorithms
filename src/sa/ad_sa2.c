@@ -5,14 +5,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "ad_defs.h"
-#include "ad_random.h"
-#include "ad_fileio.h"
-#include "ad_hypergraph.h"
-#include "ad_readinput.h"
-#include "ad_partition.h"
-#include "ad_lib.h"
-#include "ad_lib_sa.h"
+#include "hpga/ad_defs.h"
+#include "hpga/ad_random.h"
+#include "hpga/ad_fileio.h"
+#include "hpga/ad_hypergraph.h"
+#include "hpga/ad_readinput.h"
+#include "hpga/ad_partition.h"
+#include "hpga/ad_lib.h"
+#include "hpga/ad_lib_sa.h"
 
 /* Simulated Annealing for Multiple-way Hypergraph Partitioning -
    based on the paper: Peterson et al., Neural networks and

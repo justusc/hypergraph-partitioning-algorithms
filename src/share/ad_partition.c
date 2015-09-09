@@ -4,10 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
-#include "ad_random.h"
-#include "ad_fileio.h"
-#include "ad_defs.h"
-#include "ad_partition.h"
+#include "hpga/ad_random.h"
+#include "hpga/ad_fileio.h"
+#include "hpga/ad_defs.h"
+#include "hpga/ad_partition.h"
 
 /* create initial partition */
 int create_partition(int nocells,

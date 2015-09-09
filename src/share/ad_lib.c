@@ -1,13 +1,13 @@
 
-/* COPYRIGHT C 1991- Ali Dasdan */ 
+/* COPYRIGHT C 1991- Ali Dasdan */
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "ad_defs.h"
-#include "ad_lib.h"
+#include "hpga/ad_defs.h"
+#include "hpga/ad_lib.h"
 
 /* initialize all bucket indices and pointers */
-void init_buckets(int noparts, 
+void init_buckets(int noparts,
                   int bucketsize,
                   partb_t partb[][noparts - 1])
 {
@@ -26,7 +26,7 @@ void init_buckets(int noparts,
         }   /* for j */
     }   /* for i */
 }   /* init_buckets */
- 
+
 /* map part no such that home_part is excluded */
 int map_part_no(int dest_part, int home_part)
 {
@@ -39,20 +39,20 @@ int map_part_no(int dest_part, int home_part)
         exit(1);
     }
 }   /* map_part_no */
- 
+
 /* compute move gain from home_part to dest_part */
-int calculate_gain(int cell_no, 
-                   int home_part, 
+int calculate_gain(int cell_no,
+                   int home_part,
                    int dest_part,
                    cells_info_t cells_info[])
 {
-    int mov_gain = cells_info[cell_no].mgain[dest_part] - 
+    int mov_gain = cells_info[cell_no].mgain[dest_part] -
         cells_info[cell_no].mgain[home_part];
     return mov_gain;
 }   /* calculate_gain */
 
 /* compute gains of all cells and place them into cells_info */
-void compute_gains(int nocells, 
+void compute_gains(int nocells,
                    int noparts,
                    cells_t cells[],
                    nets_t nets[],
@@ -68,7 +68,7 @@ void compute_gains(int nocells,
 
         /* find info about the cell */
         int net_ptr = cells[cell_no].netlist;
-        cells[cell_no].cno_inets = 0; 
+        cells[cell_no].cno_inets = 0;
 
         /* initialize external & internal costs */
         for (int j = 0; j < noparts; j++) {
@@ -90,7 +90,7 @@ void compute_gains(int nocells,
                 int found = False;
                 int tpart_no = 0;
                 while ((tpart_no < noparts) && (!found)) {
-                    if ((tpart_no != part_no) && 
+                    if ((tpart_no != part_no) &&
                         (nets[net_no].npartdeg[tpart_no] == (nets[net_no].nno_cells - 1))) {
                         found = True;
                         cells_info[cell_no].mgain[tpart_no] += net_weight;
@@ -110,7 +110,7 @@ void compute_gains(int nocells,
 }   /* compute_gains */
 
 /* compute gains of all cells and place them into cells_info */
-void compute_gains2(int nocells, 
+void compute_gains2(int nocells,
                     int noparts,
                     cells_t cells[],
                     nets_t nets[],
@@ -126,7 +126,7 @@ void compute_gains2(int nocells,
         cells_info[cell_no].mcount = 0;
 
         /* find info about the cell */
-        cells[cell_no].cno_inets = 0; 
+        cells[cell_no].cno_inets = 0;
         int net_ptr = cells[cell_no].netlist;
 
         /* initialize external & internal costs */
@@ -149,8 +149,8 @@ void compute_gains2(int nocells,
                 int found = False;
                 int tpart_no = 0;
                 while ((tpart_no < noparts) && (!found)) {
-                    if ((tpart_no != part_no) && 
-                        (nets_info[net_no].npartdeg[tpart_no] == 
+                    if ((tpart_no != part_no) &&
+                        (nets_info[net_no].npartdeg[tpart_no] ==
                          (nets[net_no].nno_cells - 1))) {
                         found = True;
                         cells_info[cell_no].mgain[tpart_no] += net_weight;
@@ -170,7 +170,7 @@ void compute_gains2(int nocells,
 }   /* compute_gains2 */
 
 /* free all allocated nodes */
-void free_nodes(int noparts, 
+void free_nodes(int noparts,
                 int bucketsize,
                 partb_t partb[][noparts - 1])
 {
@@ -196,8 +196,8 @@ void free_nodes(int noparts,
 }   /* free_nodes */
 
 /* count number of bucket nodes */
-void number_nodes(int noparts, 
-                  int bucketsize, 
+void number_nodes(int noparts,
+                  int bucketsize,
                   int *npartb,
                   partb_t partb[][noparts - 1])
 {
@@ -238,11 +238,11 @@ int find_move_set(mcells_t mcells[],
 
 /* move cells actually - permanently */
 int move_cells(int wflag,
-               int nocells, 
+               int nocells,
                int msize,
                mcells_t mcells[],
-               int max_mcells_inx, 
-               int cutsize, 
+               int max_mcells_inx,
+               int cutsize,
                int *glob_inx,
                ind_t *ind,
                cells_t cells[],
@@ -308,8 +308,8 @@ int move_cells(int wflag,
 }   /* move_cells */
 
 /* finds cut size of a given partition - used for control */
-int find_cut_size(int nonets, 
-                  int noparts, 
+int find_cut_size(int nonets,
+                  int noparts,
                   int totnetsize,
                   nets_t nets[],
                   ind_t *ind)
@@ -334,7 +334,7 @@ int find_cut_size(int nonets,
 }   /* find_cut_size */
 
 /* save nets info in nets_info */
-void copy_nets_info(int nonets, 
+void copy_nets_info(int nonets,
                     int noparts,
                     nets_t nets[],
                     nets_info_t nets_info[])
