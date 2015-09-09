@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <stdio.h>
 
 /* initialize cells array */
 void init_cells(int nocells, cells_t cells[])
