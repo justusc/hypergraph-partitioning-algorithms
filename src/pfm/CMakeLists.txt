@@ -1,9 +1,9 @@
-add_library(libpfm ad_lib_pfm.c)
+add_library(libpfm libpfm.c)
 
-add_executable(ad_pfm ad_pfm.c)
-target_link_libraries(ad_pfm libpfm libhgpa)
+add_executable(pfm pfm.c)
+target_link_libraries(pfm libpfm libhgpa)
 
-add_dependencies(check ad_pfm)
+add_dependencies(check pfm)
 
 # Add a test for fms
 add_test(NAME pfm COMMAND utest.sh ${CMAKE_CURRENT_BINARY_DIR}

@@ -1,3 +1,2 @@
-add_library(libhgpa 
-    ad_bucketio.c ad_fileio.c ad_lib.c ad_hypergraph.c ad_partition.c
-    ad_print.c ad_random.c ad_readinput.c)
+add_library(libhgpa bucketio.c fileio.c libhgpa.c hypergraph.c partition.c
+    print.c random.c readinput.c)
